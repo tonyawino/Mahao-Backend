@@ -4,3 +4,4 @@ from app.db.base_class import Base  # noqa
 from app.models.item import Item  # noqa
 from app.models.user import User  # noqa
 from app.models.property_category import PropertyCategory  # noqa
+from app.models.amenity import Amenity  # noqa
