@@ -407,6 +407,18 @@ pycodestyle = ">=2.7.0,<2.8.0"
 pyflakes = ">=2.3.0,<2.4.0"
 
 [[package]]
+name = "geoalchemy2"
+version = "0.10.0"
+description = "Using SQLAlchemy with Spatial Databases"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+packaging = "*"
+SQLAlchemy = ">=1.1"
+
+[[package]]
 name = "google-api-core"
 version = "2.3.2"
 description = "Google API client core library"
@@ -1329,7 +1341,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "308a5317d53722fc65743a29c41b48db976b253cf108bc90e6aa8a37ebfa53b6"
+content-hash = "5b0aed694345400a880887eb2cf55242a9485f51c8a5a343a6b925162854e420"
 
 [metadata.files]
 alembic = [
@@ -1565,6 +1577,10 @@ firebase-admin = [
 flake8 = [
     {file = "flake8-3.9.2-py2.py3-none-any.whl", hash = "sha256:bf8fd333346d844f616e8d47905ef3a3384edae6b4e9beb0c5101e25e3110907"},
     {file = "flake8-3.9.2.tar.gz", hash = "sha256:07528381786f2a6237b061f6e96610a4167b226cb926e2aa2b6b1d78057c576b"},
+]
+geoalchemy2 = [
+    {file = "GeoAlchemy2-0.10.0-py2.py3-none-any.whl", hash = "sha256:8c16483e65b64a9696d64da42133f65be9ee254dfeb17b2481722da6577fdb34"},
+    {file = "GeoAlchemy2-0.10.0.tar.gz", hash = "sha256:d97f85a4ff84341c12b1d7a6fee5ab5e5e942271279684310bb2f507b6ee5c53"},
 ]
 google-api-core = [
     {file = "google-api-core-2.3.2.tar.gz", hash = "sha256:c8889f45cf58deca522888ae1d39b2a25e93e7d1b019ae8cee6456d5c726a40c"},
