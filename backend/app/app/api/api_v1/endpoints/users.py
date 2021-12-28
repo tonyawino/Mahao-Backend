@@ -176,6 +176,8 @@ def update_user(
             detail="The user with this username does not exist in the system",
         )
 
+    if not crud.user.is_superuser(current_user) and (user.id != current_user.id):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
     user_other = crud.user.get_by_email(db, email=user_in.email)
     if user_other and user.id != user_other.id:
         raise HTTPException(
@@ -189,5 +191,7 @@ def update_user(
             detail="The user with this phone already exists in the system",
         )
 
+    if not crud.user.is_superuser(current_user):
+        user_in.is_verified = current_user.is_verified
     user = crud.user.update(db, db_obj=user, obj_in=user_in)
     return user
