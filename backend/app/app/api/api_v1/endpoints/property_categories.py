@@ -48,7 +48,7 @@ def create_property_category(
         return property_category
 
     property_category_in.icon = upload_file(icon, property_category.id, "property_category")
-    property_category = crud.item.update(db=db, db_obj=property_category,
+    property_category = crud.property_category.update(db=db, db_obj=property_category,
                                          obj_in=property_category_in)
     return property_category
 
@@ -73,7 +73,7 @@ def update_property_category(
     if icon:
         url = upload_file(icon, property_category.id, "property_category")
         property_category_update.icon = url
-    property_category = crud.item.update(db=db, db_obj=property_category,
+    property_category = crud.property_category.update(db=db, db_obj=property_category,
                                          obj_in=property_category_update)
     return property_category
 
