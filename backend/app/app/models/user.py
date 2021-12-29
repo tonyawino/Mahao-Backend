@@ -23,3 +23,4 @@ class User(Base):
     is_superuser = Column(Boolean(), default=False)
     created_at = Column(DateTime, default=func.now(), nullable=False)
     properties = relationship("Property", back_populates="owner")
+    favorites = relationship("Favorite", back_populates="user")

@@ -1,9 +1,9 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel, Field
 
-from . import User, PropertyCategory
+from . import User, PropertyCategory, PropertyAmenity, Amenity
 from .geometry import Geometry
 
 
@@ -44,8 +44,10 @@ class PropertyInDBBase(PropertyBase):
 
 # Properties to return to client
 class Property(PropertyInDBBase):
+    is_favorite: bool
     owner: User
     property_category: PropertyCategory
+    property_amenities: List[PropertyAmenity]
 
 
 # Properties properties stored in DB
