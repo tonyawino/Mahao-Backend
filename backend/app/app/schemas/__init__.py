@@ -6,3 +6,4 @@ from .amenity import Amenity, AmenityCreate, AmenityInDB, AmenityUpdate
 from .property_amenity import PropertyAmenity, PropertyAmenityCreate, PropertyAmenityInDB, PropertyAmenityUpdate, PropertyAmenityModify
 from .property import Property, PropertyCreate, PropertyInDB, PropertyUpdate
 from .favorite import Favorite, FavoriteCreate, FavoriteInDB, FavoriteUpdate
+from .feedback import Feedback, FeedbackCreate, FeedbackInDB, FeedbackUpdate, FeedbackIn
