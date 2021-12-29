@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Column, ForeignKey, Integer, String, Float, Boolean, DateTime, func
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 #from geoalchemy2 import Geometry
 
@@ -28,3 +29,11 @@ class Property(Base):
     created_at = Column(DateTime, default=func.now(), nullable=False)
     owner = relationship("User", back_populates="properties")
     property_category = relationship("PropertyCategory", back_populates="properties")
+    property_amenities = relationship("PropertyAmenity", back_populates="property")
+    favorites = relationship("Favorite", back_populates="property")
+
+    @hybrid_property
+    def is_favorite(self):
+        is_fave = (self.favorites is not None and (len(self.favorites) > 0))
+        print(f"Is favorite {is_fave}")
+        return is_fave
