@@ -2,6 +2,7 @@ import uuid
 from typing import Any, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Body
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
@@ -273,3 +274,25 @@ def remove_favorite(
                                                                user_id=current_user.id)
 
     return favorite
+
+
+@router.post("/{id}/add_feedback", response_model=schemas.Feedback)
+def add_feedback(
+        *,
+        db: Session = Depends(deps.get_db),
+        id: int,
+        feedback: schemas.FeedbackIn,
+        current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Add feedback to the property by logged in user
+    """
+    property = crud.property.get(db=db, id=id, user_id=current_user.id)
+    if not property:
+        raise HTTPException(status_code=404, detail="Property not found")
+
+    feedback_out = crud.feedback.create(db=db, obj_in=schemas.FeedbackCreate(**jsonable_encoder(feedback),
+                                                                             property_id=id,
+                                                                             user_id=current_user.id))
+    return feedback_out
+

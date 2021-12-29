@@ -1,0 +1,7 @@
+from enum import Enum
+
+
+class FeedbackType(str, Enum):
+    CLICK = "CLICK"
+    VIEW = "VIEW"
+    FAVORITE = "FAVORITE"

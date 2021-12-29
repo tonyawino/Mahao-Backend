@@ -31,6 +31,7 @@ class Property(Base):
     property_category = relationship("PropertyCategory", back_populates="properties")
     property_amenities = relationship("PropertyAmenity", back_populates="property")
     favorites = relationship("Favorite", back_populates="property")
+    feedbacks = relationship("Feedback", back_populates="property")
 
     @hybrid_property
     def is_favorite(self):

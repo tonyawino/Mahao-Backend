@@ -7,3 +7,4 @@ from app.models.amenity import Amenity  # noqa
 from app.models.property import Property  # noqa
 from app.models.property_amenity import PropertyAmenity  # noqa
 from app.models.favorite import Favorite  # noqa
+from app.models.feedback import Feedback  # noqa
