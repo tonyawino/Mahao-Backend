@@ -5,6 +5,7 @@ from .crud_amenity import amenity
 from .crud_property_amenity import property_amenity
 from .crud_favorite import favorite
 from .crud_feedback import feedback
+from .crud_property_photo import property_photo
 
 # For a new basic set of CRUD operations you could just do
 
