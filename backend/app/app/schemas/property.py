@@ -3,7 +3,7 @@ from typing import Optional, List
 
 from pydantic import BaseModel, Field
 
-from . import User, PropertyCategory, PropertyAmenity, Amenity
+from . import User, PropertyCategory, PropertyAmenity, Amenity, PropertyPhoto
 from .geometry import Geometry
 
 
@@ -48,6 +48,7 @@ class Property(PropertyInDBBase):
     owner: User
     property_category: PropertyCategory
     property_amenities: List[PropertyAmenity]
+    property_photos: List[PropertyPhoto]
 
 
 # Properties properties stored in DB

@@ -198,7 +198,8 @@ def modify_property_amenities(
             if not amenity:
                 actual_amenity = crud.amenity.get(db=db, id=amenity_id)
                 if not actual_amenity:
-                    raise HTTPException(status_code=404, detail=f"Some amenities to create not found with id {amenity_id}")
+                    raise HTTPException(status_code=404,
+                                        detail=f"Some amenities to create not found with id {amenity_id}")
 
                 amenity = crud.property_amenity.create(db=db,
                                                        obj_in=schemas.PropertyAmenityCreate(property_id=id,
@@ -296,3 +297,55 @@ def add_feedback(
                                                                              user_id=current_user.id))
     return feedback_out
 
+
+@router.post("/{id}/add_property_photos", response_model=List[schemas.PropertyPhoto])
+def add_property_photos(
+        *,
+        db: Session = Depends(deps.get_db),
+        id: int,
+        photos: List[UploadFile] = File(...),
+        current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Add photos to the property
+    """
+    property = crud.property.get(db=db, id=id, user_id=current_user.id)
+    if not property:
+        raise HTTPException(status_code=404, detail="Property not found")
+    if not crud.user.is_superuser(current_user) and (property.owner_id != current_user.id):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+
+    photo_res = list()
+    for photo in photos:
+        url = upload_file(photo, str(uuid.uuid4()), "property_photo")
+        property_photo = crud.property_photo.create(db=db,
+                                                    obj_in=schemas.PropertyPhotoCreate(photo=url,
+                                                                                       property_id=id,
+                                                                                       user_id=current_user.id))
+        photo_res.append(property_photo)
+    return photo_res
+
+
+@router.post("/{id}/remove_property_photo", response_model=schemas.PropertyPhoto)
+def remove_property_photo(
+        *,
+        db: Session = Depends(deps.get_db),
+        id: int,
+        property_photo: schemas.PropertyPhotoRemove,
+        current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Add photo to the property
+    """
+    property = crud.property.get(db=db, id=id, user_id=current_user.id)
+    if not property:
+        raise HTTPException(status_code=404, detail="Property not found")
+    if not crud.user.is_superuser(current_user) and (property.owner_id != current_user.id):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+
+    property_photo = crud.property_photo.get(db=db, id=property_photo.id)
+
+    if not property_photo or (id != property_photo.property_id):
+        raise HTTPException(status_code=404, detail=f"The property_photo does not exist")
+    property_photo = crud.property_photo.remove(db=db, id=property_photo.id)
+    return property_photo
