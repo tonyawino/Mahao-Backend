@@ -17,7 +17,7 @@ class CRUDProperty(CRUDBase[Property, PropertyCreate, PropertyUpdate]):
         return query.first()
 
     def get_multi(
-        self, db: Session, *, skip: int = 0, limit: int = 100, user_id: int
+            self, db: Session, *, skip: int = 0, limit: int = 100, user_id: int
     ) -> List[Property]:
         query = db.query(Property)
         query.outerjoin(Favorite, ((Property.id == Favorite.property_id) & (Favorite.user_id == user_id)))
@@ -43,8 +43,22 @@ class CRUDProperty(CRUDBase[Property, PropertyCreate, PropertyUpdate]):
     def get_favorite_by_owner(
             self, db: Session, *, owner_id: int, skip: int = 0, limit: int = 100
     ) -> List[Property]:
-        query = db.query(Property).join(Favorite, ((Property.id == Favorite.property_id) & (Favorite.user_id == owner_id)))
+        query = db.query(Property).join(Favorite,
+                                        ((Property.id == Favorite.property_id) & (Favorite.user_id == owner_id)))
         return query.offset(skip).limit(limit).all()
+
+    def get_labels(self, property: Property) -> List[str]:
+        labels = [f"num_bed:{property.num_bed}", f"num_bath:{property.num_bath}",
+                  f"location:{property.location_name}", f"price:{property.price}",
+                  f"category:{property.property_category_id}", f"user:{property.owner_id}",
+                  f"verified:{property.is_verified}"]
+
+        for amenity in property.property_amenities:
+            labels.append(f"amenity:{amenity.id}")
+        return labels
+
+    def get_categories(self, property: Property) -> List[str]:
+        return [amenity.id for amenity in property.property_amenities]
 
 
 property = CRUDProperty(Property)

@@ -7,4 +7,9 @@ from .property_amenity import PropertyAmenity, PropertyAmenityCreate, PropertyAm
 from .property_photo import PropertyPhoto, PropertyPhotoCreate, PropertyPhotoInDB, PropertyPhotoUpdate, PropertyPhotoIn, PropertyPhotoRemove
 from .property import Property, PropertyCreate, PropertyInDB, PropertyUpdate
 from .favorite import Favorite, FavoriteCreate, FavoriteInDB, FavoriteUpdate
+from .feedback_type import FeedbackType
 from .feedback import Feedback, FeedbackCreate, FeedbackInDB, FeedbackUpdate, FeedbackIn
+from .gorse_feedback import GorseFeedback
+from .gorse_item import GorseItem
+from .gorse_user import GorseUser
+

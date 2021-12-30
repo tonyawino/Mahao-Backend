@@ -1,6 +1,5 @@
 version: "3.3"
 services:
-
   proxy:
     image: traefik:v2.2
     networks:
@@ -67,7 +66,6 @@ services:
         # Middleware to redirect www, and redirect HTTP to HTTPS
         # to disable www redirection remove the section: ${STACK_NAME?Variable not set}-www-redirect,
         - traefik.http.routers.${STACK_NAME?Variable not set}-proxy-http.middlewares=${STACK_NAME?Variable not set}-www-redirect,${STACK_NAME?Variable not set}-https-redirect
-
   db:
     image: postgres:12
     volumes:
@@ -190,6 +188,57 @@ services:
         - traefik.constraint-label-stack=${TRAEFIK_TAG?Variable not set}
         - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-http.rule=PathPrefix(`/`)
         - traefik.http.services.${STACK_NAME?Variable not set}-frontend.loadbalancer.server.port=80
+
+  redis:
+    image: redis
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+  mysql:
+    image: mysql/mysql-server
+    restart: unless-stopped
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD?Variable not set}
+      MYSQL_DATABASE: ${MYSQL_DATABASE?Variable not set}
+      MYSQL_USER: ${MYSQL_USER?Variable not set}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD?Variable not set}
+    volumes:
+      - ./var/lib/mysql:/var/lib/mysql
+  worker:
+    image: zhenghaoz/gorse-worker
+    restart: unless-stopped
+    ports:
+      - 8089:8089
+    command: >
+      --master-host master --master-port 8086 --http-host 0.0.0.0 --http-port 8089
+      --log-path /var/log/gorse/worker.log --cache-path /var/lib/gorse/worker_cache.data
+    volumes:
+      - ./var/log/gorse:/var/log/gorse
+      - ./var/lib/gorse:/var/lib/gorse
+  server:
+    image: zhenghaoz/gorse-server
+    restart: unless-stopped
+    ports:
+      - 8087:8087
+    command: >
+      --master-host master --master-port 8086 --http-host 0.0.0.0 --http-port 8087
+      --log-path /var/log/gorse/server.log --cache-path /var/lib/gorse/server_cache.data
+    volumes:
+      - ./var/log/gorse:/var/log/gorse
+      - ./var/lib/gorse:/var/lib/gorse
+  master:
+    image: zhenghaoz/gorse-master
+    restart: unless-stopped
+    ports:
+      - 8086:8086
+      - 8088:8088
+    command: -c /etc/gorse/config.toml --log-path /var/log/gorse/master.log --cache-path /var/lib/gorse/master_cache.data
+    volumes:
+      - ./config.toml:/etc/gorse/config.toml
+      - ./var/log/gorse:/var/log/gorse
+      - ./var/lib/gorse:/var/lib/gorse
 
 volumes:
   app-db-data:

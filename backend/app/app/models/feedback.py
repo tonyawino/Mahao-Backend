@@ -15,5 +15,6 @@ class Feedback(Base):
     user_id = Column(Integer, ForeignKey("user.id"), index=True)
     feedback_type = Column(String, nullable=False, index=True)
     created_at = Column(DateTime, default=func.now(), nullable=False)
+    last_updated = Column('last_updated', DateTime, onupdate=func.now())
     property = relationship("Property", back_populates="feedbacks")
     user = relationship("User", back_populates="feedbacks")

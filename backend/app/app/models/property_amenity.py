@@ -14,5 +14,6 @@ class PropertyAmenity(Base):
     property_id = Column(Integer, ForeignKey("property.id"), primary_key=True, index=True)
     amenity_id = Column(Integer, ForeignKey("amenity.id"), primary_key=True, index=True)
     created_at = Column(DateTime, default=func.now(), nullable=False)
+    last_updated = Column('last_updated', DateTime, onupdate=func.now())
     property = relationship("Property", back_populates="property_amenities")
     amenity = relationship("Amenity", back_populates="property_amenities")

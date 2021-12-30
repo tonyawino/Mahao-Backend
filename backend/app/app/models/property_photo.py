@@ -14,4 +14,5 @@ class PropertyPhoto(Base):
     property_id = Column(Integer, ForeignKey("property.id"), index=True)
     photo = Column(String, nullable=False)
     created_at = Column(DateTime, default=func.now(), nullable=False)
+    last_updated = Column('last_updated', DateTime, onupdate=func.now())
     property = relationship("Property", back_populates="property_photos")

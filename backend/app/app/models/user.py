@@ -22,6 +22,7 @@ class User(Base):
     is_active = Column(Boolean(), default=True)
     is_superuser = Column(Boolean(), default=False)
     created_at = Column(DateTime, default=func.now(), nullable=False)
+    last_updated = Column('last_updated', DateTime, onupdate=func.now())
     properties = relationship("Property", back_populates="owner")
     favorites = relationship("Favorite", back_populates="user")
     feedbacks = relationship("Feedback", back_populates="user")

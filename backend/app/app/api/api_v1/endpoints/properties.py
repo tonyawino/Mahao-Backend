@@ -1,3 +1,4 @@
+import datetime
 import uuid
 from typing import Any, List, Optional
 
@@ -10,6 +11,8 @@ from app.api import deps
 
 from app.core.storage import upload_file
 from app.schemas.geometry import Geometry
+
+from app.recommend import gorse
 
 router = APIRouter()
 
@@ -92,6 +95,12 @@ def create_property(
     property_in.feature_image = upload_file(feature_image, str(uuid.uuid4()), "property")
     property = crud.property.create_with_owner(db=db, obj_in=property_in, owner_id=current_user.id)
 
+    gorse.insert_item(schemas.GorseItem(Categories=crud.property.get_categories(property),
+                                        IsHidden=(not property.is_enabled),
+                                        Comment=f"Created by {current_user.id}",
+                                        ItemId=property.id,
+                                        Labels=crud.property.get_labels(property),
+                                        Timestamp=property.created_at))
     return property
 
 
@@ -134,6 +143,13 @@ def update_property(
     if not crud.user.is_superuser(current_user):
         property_in.is_verified = property.is_verified
     property = crud.property.update(db=db, db_obj=property, obj_in=property_in)
+
+    gorse.update_item(id, schemas.GorseItem(Categories=crud.property.get_categories(property),
+                                            IsHidden=(not property.is_enabled),
+                                            Comment=f"Updated by {current_user.id}",
+                                            ItemId=property.id,
+                                            Labels=crud.property.get_labels(property),
+                                            Timestamp=property.last_updated))
     return property
 
 
@@ -169,6 +185,7 @@ def delete_property(
     if not crud.user.is_superuser(current_user) and (property.owner_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
     property = crud.property.remove(db=db, id=id)
+    gorse.remove_item(id)
     return property
 
 
@@ -204,6 +221,7 @@ def modify_property_amenities(
                 amenity = crud.property_amenity.create(db=db,
                                                        obj_in=schemas.PropertyAmenityCreate(property_id=id,
                                                                                             amenity_id=amenity_id))
+                gorse.add_category_to_item(id, amenity_id)
             amenities_return.append(amenity)
 
     if amenities.removed:
@@ -218,6 +236,7 @@ def modify_property_amenities(
             amenity = crud.property_amenity.delete_by_property_id_and_amenity_id(db=db,
                                                                                  property_id=id,
                                                                                  amenity_id=amenity_id)
+            gorse.remove_category_from_item(id, amenity_id)
 
     return amenities_return
 
@@ -246,6 +265,11 @@ def add_favorite(
     favorite = crud.favorite.create(db=db, obj_in=schemas.FavoriteCreate(property_id=id,
                                                                          user_id=current_user.id))
 
+    gorse.insert_feedback([schemas.GorseFeedback(Comment=f"Created by {current_user.id}",
+                                                 FeedbackType="favorite",
+                                                 ItemId=id,
+                                                 UserId=current_user.id,
+                                                 Timestamp=favorite.created_at)])
     return favorite
 
 
@@ -274,6 +298,7 @@ def remove_favorite(
                                                                property_id=id,
                                                                user_id=current_user.id)
 
+    gorse.remove_feedback(user_id=current_user.id, item_id=id, feedback_type="favorite")
     return favorite
 
 
@@ -295,6 +320,12 @@ def add_feedback(
     feedback_out = crud.feedback.create(db=db, obj_in=schemas.FeedbackCreate(**jsonable_encoder(feedback),
                                                                              property_id=id,
                                                                              user_id=current_user.id))
+
+    gorse.insert_feedback([schemas.GorseFeedback(Comment=f"Created by {current_user.id}",
+                                                 FeedbackType=feedback_out.feedback_type.lower(),
+                                                 ItemId=feedback_out.property_id,
+                                                 UserId=feedback_out.user_id,
+                                                 Timestamp=feedback_out.created_at)])
     return feedback_out
 
 
