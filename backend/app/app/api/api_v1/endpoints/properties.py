@@ -47,7 +47,7 @@ def read_my_properties(
     return properties
 
 
-@router.get("/favorites/", response_model=List[schemas.Property])
+@router.get("/favorites/", response_model=List[schemas.Property], tags=["favorites"])
 def read_favorite_properties(
         db: Session = Depends(deps.get_db),
         skip: int = 0,
@@ -60,6 +60,101 @@ def read_favorite_properties(
     properties = crud.property.get_favorite_by_owner(
         db=db, owner_id=current_user.id, skip=skip, limit=limit
     )
+    return properties
+
+
+def get_score(elem):
+    return elem["Score"]
+
+
+@router.get("/latest", response_model=List[schemas.Property], tags=["recommendations"])
+def read_latest_properties(
+        category: Optional[int] = None,
+        db: Session = Depends(deps.get_db),
+        skip: int = 0,
+        limit: int = 100,
+        current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Retrieve the latest properties
+    """
+    latest = gorse.get_latest_items(category=category, skip=skip, limit=limit)
+    # If recommendations were generated
+    if latest and (len(latest) > 0):
+        # Sort by score in descending order
+        latest.sort(key=get_score, reverse=True)
+        properties = list()
+        for neighbor in latest:
+            properties.append(crud.property.get(db=db, id=int(neighbor["Id"]), user_id=current_user.id))
+    # If no recommendations were generated
+    else:
+        properties = crud.property.get_multi(db,
+                                             skip=skip,
+                                             limit=limit,
+                                             user_id=current_user.id)
+    return properties
+
+
+@router.get("/popular", response_model=List[schemas.Property], tags=["recommendations"])
+def read_popular_properties(
+        category: Optional[int] = None,
+        db: Session = Depends(deps.get_db),
+        skip: int = 0,
+        limit: int = 100,
+        current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Retrieve the popular properties
+    """
+    popular = gorse.get_popular_items(category=category, skip=skip, limit=limit)
+    # If recommendations were generated
+    if popular and (len(popular) > 0):
+        # Sort by score in descending order
+        popular.sort(key=get_score, reverse=True)
+        properties = list()
+        for neighbor in popular:
+            properties.append(crud.property.get(db=db, id=int(neighbor["Id"]), user_id=current_user.id))
+    # If no recommendations were generated
+    else:
+        properties = crud.property.get_multi(db,
+                                             skip=skip,
+                                             limit=limit,
+                                             user_id=current_user.id)
+    return properties
+
+
+@router.get("/recommended", response_model=List[schemas.Property], tags=["recommendations"])
+def read_recommended_properties(
+        category: Optional[int] = None,
+        db: Session = Depends(deps.get_db),
+        skip: int = 0,
+        limit: int = 100,
+        current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Retrieve properties recommended for the logged in user
+    """
+    recommended = gorse.get_recommended_items(user_id=current_user.id, category=category, skip=skip, limit=limit)
+    if (not recommended) or (len(recommended) == 0):
+        recommended = gorse.get_latest_items(category=category, skip=skip, limit=limit)
+    # If recommendations were generated
+    if recommended and (len(recommended) > 0):
+        if isinstance(recommended[0], dict):
+            recommended.sort(key=get_score, reverse=True)
+        # Sort by score in descending order
+        properties = list()
+        for neighbor in recommended:
+            if isinstance(neighbor, str):
+                neighbor_id = int(neighbor)
+            else:
+                neighbor_id = int(neighbor["Id"])
+            properties.append(crud.property.get(db=db, id=neighbor_id, user_id=current_user.id))
+    # If no recommendations were generated
+    else:
+        properties = crud.property.get_multi(db,
+                                             skip=skip,
+                                             limit=limit,
+                                             user_id=current_user.id)
     return properties
 
 
@@ -189,7 +284,7 @@ def delete_property(
     return property
 
 
-@router.post("/{id}/modify_property_amenities", response_model=List[schemas.PropertyAmenity])
+@router.post("/{id}/modify_property_amenities", response_model=List[schemas.PropertyAmenity], tags=["amenities"])
 def modify_property_amenities(
         *,
         db: Session = Depends(deps.get_db),
@@ -241,7 +336,7 @@ def modify_property_amenities(
     return amenities_return
 
 
-@router.post("/{id}/add_favorite", response_model=schemas.Favorite)
+@router.post("/{id}/add_favorite", response_model=schemas.Favorite, tags=["favorites"])
 def add_favorite(
         *,
         db: Session = Depends(deps.get_db),
@@ -273,7 +368,7 @@ def add_favorite(
     return favorite
 
 
-@router.post("/{id}/remove_favorite", response_model=schemas.Favorite)
+@router.post("/{id}/remove_favorite", response_model=schemas.Favorite, tags=["favorites"])
 def remove_favorite(
         *,
         db: Session = Depends(deps.get_db),
@@ -302,7 +397,7 @@ def remove_favorite(
     return favorite
 
 
-@router.post("/{id}/add_feedback", response_model=schemas.Feedback)
+@router.post("/{id}/add_feedback", response_model=schemas.Feedback, tags=["feedback"])
 def add_feedback(
         *,
         db: Session = Depends(deps.get_db),
@@ -329,7 +424,7 @@ def add_feedback(
     return feedback_out
 
 
-@router.post("/{id}/add_property_photos", response_model=List[schemas.PropertyPhoto])
+@router.post("/{id}/add_property_photos", response_model=List[schemas.PropertyPhoto], tags=["property photos"])
 def add_property_photos(
         *,
         db: Session = Depends(deps.get_db),
@@ -357,7 +452,7 @@ def add_property_photos(
     return photo_res
 
 
-@router.post("/{id}/remove_property_photo", response_model=schemas.PropertyPhoto)
+@router.post("/{id}/remove_property_photo", response_model=schemas.PropertyPhoto, tags=["property photos"])
 def remove_property_photo(
         *,
         db: Session = Depends(deps.get_db),
@@ -380,3 +475,36 @@ def remove_property_photo(
         raise HTTPException(status_code=404, detail=f"The property_photo does not exist")
     property_photo = crud.property_photo.remove(db=db, id=property_photo.id)
     return property_photo
+
+
+@router.get("/{id}/similar", response_model=List[schemas.Property], tags=["recommendations"])
+def read_similar_properties(
+        id: int,
+        category: Optional[int] = None,
+        db: Session = Depends(deps.get_db),
+        skip: int = 0,
+        limit: int = 100,
+        current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Retrieve properties similar to a property
+    """
+    neighbors = gorse.get_item_neighbors(item_id=id, category=category, skip=skip, limit=limit)
+    if (not neighbors) or (len(neighbors) == 0):
+        neighbors = gorse.get_latest_items(category=category, skip=skip, limit=limit)
+    # If recommendations were generated
+    if neighbors and (len(neighbors) > 0):
+        # Sort by score in descending order
+        neighbors.sort(key=get_score, reverse=True)
+        properties = list()
+        for neighbor in neighbors:
+            properties.append(crud.property.get(db=db, id=int(neighbor["Id"]), user_id=current_user.id))
+    # If no recommendations were generated
+    else:
+        properties = crud.property.get_multi(db,
+                                             skip=skip,
+                                             limit=limit,
+                                             user_id=current_user.id)
+    return properties
+
+

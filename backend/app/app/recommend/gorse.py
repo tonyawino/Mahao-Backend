@@ -48,7 +48,7 @@ def remove_feedback(user_id: int, item_id: int, feedback_type: str) -> Any:
         print("Unable to connect to Gorse Server")
 
 
-def get_users_collaborative(user_id: int, category: Optional[int] = None, skip: int = 0, limit: int = 0) -> Any:
+def get_collaborative_item_recommendations(user_id: int, category: Optional[int] = None, skip: int = 0, limit: int = 0) -> Any:
     endpoint = f"intermediate/recommend/{user_id}"
     if category:
         endpoint = f"intermediate/recommend/{user_id}/{category}"

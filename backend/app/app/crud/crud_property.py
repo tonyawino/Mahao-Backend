@@ -17,10 +17,13 @@ class CRUDProperty(CRUDBase[Property, PropertyCreate, PropertyUpdate]):
         return query.first()
 
     def get_multi(
-            self, db: Session, *, skip: int = 0, limit: int = 100, user_id: int
+            self, db: Session, *, skip: int = 0, limit: int = 100, user_id: int, options: Optional[List[str]] = None
     ) -> List[Property]:
         query = db.query(Property)
-        query.outerjoin(Favorite, ((Property.id == Favorite.property_id) & (Favorite.user_id == user_id)))
+        # If a list of IDs is given, filter by them
+        if options and (len(options) > 0):
+            query = query.filter(Property.id.in_(options))
+        query = query.outerjoin(Favorite, ((Property.id == Favorite.property_id) & (Favorite.user_id == user_id)))
         return query.offset(skip).limit(limit).all()
 
     def create_with_owner(
