@@ -27,6 +27,7 @@ class Property(Base):
     owner_id = Column(Integer, ForeignKey("user.id"))
     property_category_id = Column(Integer, ForeignKey("propertycategory.id"))
     created_at = Column(DateTime, default=func.now(), nullable=False)
+    last_updated = Column('last_updated', DateTime, onupdate=func.now())
     owner = relationship("User", back_populates="properties")
     property_category = relationship("PropertyCategory", back_populates="properties")
     property_amenities = relationship("PropertyAmenity", back_populates="property")
@@ -37,5 +38,4 @@ class Property(Base):
     @hybrid_property
     def is_favorite(self):
         is_fave = (self.favorites is not None and (len(self.favorites) > 0))
-        print(f"Is favorite {is_fave}")
         return is_fave

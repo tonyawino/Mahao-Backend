@@ -10,4 +10,5 @@ class Amenity(Base):
     description = Column(String)
     icon = Column(String)
     created_at = Column(DateTime, default=func.now(), nullable=False)
+    last_updated = Column('last_updated', DateTime, onupdate=func.now())
     property_amenities = relationship("PropertyAmenity", back_populates="amenity")
