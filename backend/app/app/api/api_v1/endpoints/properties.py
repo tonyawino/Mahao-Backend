@@ -4,6 +4,7 @@ from typing import Any, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Body
 from fastapi.encoders import jsonable_encoder
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
@@ -23,11 +24,12 @@ def read_properties(
         skip: int = 0,
         limit: int = 100,
         current_user: models.User = Depends(deps.get_current_active_user),
+        filters: schemas.PropertyFilter = Depends(schemas.PropertyFilter)
 ) -> Any:
     """
     Retrieve properties.
     """
-    properties = crud.property.get_multi(db, skip=skip, limit=limit, user_id=current_user.id)
+    properties = crud.property.get_multi(db=db, skip=skip, limit=limit, user_id=current_user.id, filters=filters)
     return properties
 
 
@@ -63,10 +65,6 @@ def read_favorite_properties(
     return properties
 
 
-def get_score(elem):
-    return elem["Score"]
-
-
 @router.get("/latest", response_model=List[schemas.Property], tags=["recommendations"])
 def read_latest_properties(
         category: Optional[int] = None,
@@ -88,7 +86,7 @@ def read_latest_properties(
             properties.append(crud.property.get(db=db, id=int(neighbor["Id"]), user_id=current_user.id))
     # If no recommendations were generated
     else:
-        properties = crud.property.get_multi(db,
+        properties = crud.property.get_multi(db=db,
                                              skip=skip,
                                              limit=limit,
                                              user_id=current_user.id)
@@ -116,7 +114,7 @@ def read_popular_properties(
             properties.append(crud.property.get(db=db, id=int(neighbor["Id"]), user_id=current_user.id))
     # If no recommendations were generated
     else:
-        properties = crud.property.get_multi(db,
+        properties = crud.property.get_multi(db=db,
                                              skip=skip,
                                              limit=limit,
                                              user_id=current_user.id)
@@ -151,7 +149,7 @@ def read_recommended_properties(
             properties.append(crud.property.get(db=db, id=neighbor_id, user_id=current_user.id))
     # If no recommendations were generated
     else:
-        properties = crud.property.get_multi(db,
+        properties = crud.property.get_multi(db=db,
                                              skip=skip,
                                              limit=limit,
                                              user_id=current_user.id)
@@ -501,10 +499,13 @@ def read_similar_properties(
             properties.append(crud.property.get(db=db, id=int(neighbor["Id"]), user_id=current_user.id))
     # If no recommendations were generated
     else:
-        properties = crud.property.get_multi(db,
+        properties = crud.property.get_multi(db=db,
                                              skip=skip,
                                              limit=limit,
                                              user_id=current_user.id)
     return properties
 
+
+def get_score(elem):
+    return elem["Score"]
 
