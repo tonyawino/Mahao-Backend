@@ -1,11 +1,13 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, ForeignKey, Integer, String, Float, Boolean, DateTime, func
+from sqlalchemy import Column, ForeignKey, Integer, String, Float, Boolean, DateTime, func, Computed, Index
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 #from geoalchemy2 import Geometry
 
 from app.db.base_class import Base
+
+from app.models.ts_vector import TSVector
 
 if TYPE_CHECKING:
     from .user import User  # noqa: F401
@@ -34,6 +36,13 @@ class Property(Base):
     favorites = relationship("Favorite", back_populates="property")
     feedbacks = relationship("Feedback", back_populates="property")
     property_photos = relationship("PropertyPhoto", back_populates="property")
+
+    # Used for full text search on title, description, and location
+    __ts_vector__ = Column(TSVector(), Computed(
+        "to_tsvector('english', title || ' ' || description || ' ' || location_name)",
+        persisted=True), default=f"{title} {description} {location_name}")
+    __table_args__ = (Index('ix_property___ts_vector__',
+                            __ts_vector__, postgresql_using='gin'),)
 
     @hybrid_property
     def is_favorite(self):

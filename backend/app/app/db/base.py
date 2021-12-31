@@ -9,3 +9,4 @@ from app.models.property_amenity import PropertyAmenity  # noqa
 from app.models.favorite import Favorite  # noqa
 from app.models.feedback import Feedback  # noqa
 from app.models.property_photo import PropertyPhoto  # noqa
+from app.models.ts_vector import TSVector  # noqa

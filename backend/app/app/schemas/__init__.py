@@ -12,4 +12,5 @@ from .feedback import Feedback, FeedbackCreate, FeedbackInDB, FeedbackUpdate, Fe
 from .gorse_feedback import GorseFeedback
 from .gorse_item import GorseItem
 from .gorse_user import GorseUser
+from .property_filter import PropertyFilter
 
