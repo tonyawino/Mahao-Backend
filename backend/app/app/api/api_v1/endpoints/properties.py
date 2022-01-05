@@ -2,7 +2,8 @@ import datetime
 import uuid
 from typing import Any, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Body
+import starlette.status
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Body, Query
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -24,12 +25,27 @@ def read_properties(
         skip: int = 0,
         limit: int = 100,
         current_user: models.User = Depends(deps.get_current_active_user),
-        filters: schemas.PropertyFilter = Depends(schemas.PropertyFilter)
+        filters: schemas.PropertyFilter = Depends(schemas.PropertyFilter),
+        sort: Optional[str] = Query("-time", title="The field to sort with", enum=["-time", "time", "-price", "price",
+                                                                                            "-distance", "distance"]),
+        sort_latitude: Optional[float] = Query(None, title="The latitude from which to calculate distance when sorting by distance", example="42.1",
+                                               ge=-90, le=90),
+        sort_longitude: Optional[float] = Query(None, title="The longitude from which to calculate distance when sorting by distance", example="20.4",
+                                                ge=-180, le=180)
+
 ) -> Any:
     """
     Retrieve properties.
     """
-    properties = crud.property.get_multi(db=db, skip=skip, limit=limit, user_id=current_user.id, filters=filters)
+    if sort:
+        if "distance" in sort:
+            if sort_latitude is None:
+                raise HTTPException(status_code=400, detail="Query parameter sort_latitude must be specified when sorting by distance")
+            if sort_longitude is None:
+                raise HTTPException(status_code=400, detail="Query parameter sort_longitude must be specified when sorting by distance")
+
+    properties = crud.property.get_multi(db=db, skip=skip, limit=limit, user_id=current_user.id, filters=filters, sort=sort,
+                                         sort_latitude=sort_latitude, sort_longitude=sort_longitude)
     return properties
 
 
@@ -168,8 +184,8 @@ def create_property(
         num_bath: int = Body(..., title="Number of bathrooms", ge=0),
         location_name: Optional[str] = Body(None),
         price: float = Body(..., title="Rent per month", ge=100),
-        latitude: float = Body(..., example="43.21"),
-        longitude: float = Body(..., example="43.21"),
+        latitude: float = Body(..., example="43.21", ge=-90, le=90),
+        longitude: float = Body(..., example="43.21", ge=-180, le=180),
         is_enabled: bool = Body(True),
         is_verified: bool = Body(False),
         current_user: models.User = Depends(deps.get_current_active_user),
@@ -179,7 +195,6 @@ def create_property(
     """
     coordinates = Geometry(type="Point", coordinates=Coordinates(latitude=latitude, longitude=longitude))
     coord = (latitude, longitude)
-    print(f"Coordinates type before object is {type(coord)}")
     property_in = schemas.PropertyCreate(title=title, description=description,
                                          num_bed=num_bed, num_bath=num_bath,
                                          location = coord,
@@ -214,8 +229,8 @@ def update_property(
         num_bath: int = Body(..., title="Number of bathrooms", ge=0),
         location_name: Optional[str] = Body(None),
         price: float = Body(..., title="Rent per month", ge=100),
-        latitude: float = Body(..., example="43.21"),
-        longitude: float = Body(..., example="43.21"),
+        latitude: float = Body(..., example="43.21", ge=-90, le=90),
+        longitude: float = Body(..., example="43.21", ge=-180, le=180),
         is_enabled: bool = Body(True),
         is_verified: bool = Body(False),
         current_user: models.User = Depends(deps.get_current_active_user),
@@ -228,8 +243,11 @@ def update_property(
         raise HTTPException(status_code=404, detail="Property not found")
     if not crud.user.is_superuser(current_user) and (property.owner_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
+    coordinates = Geometry(type="Point", coordinates=Coordinates(latitude=latitude, longitude=longitude))
+    coord = (latitude, longitude)
     property_in = schemas.PropertyCreate(title=title, description=description,
                                          num_bed=num_bed, num_bath=num_bath,
+                                         location=coord,
                                          location_name=location_name, price=price,
                                          is_enabled=is_enabled, is_verified=is_verified,
                                          property_category_id=property_category_id)
@@ -362,11 +380,16 @@ def add_favorite(
     favorite = crud.favorite.create(db=db, obj_in=schemas.FavoriteCreate(property_id=id,
                                                                          user_id=current_user.id))
 
+    feedback_out = crud.feedback.create(db=db, obj_in=schemas.FeedbackCreate(feedback_type=schemas.feedback_type.FeedbackType.FAVORITE,
+                                                                             property_id=id,
+                                                                             user_id=current_user.id))
+
     gorse.insert_feedback([schemas.GorseFeedback(Comment=f"Created by {current_user.id}",
-                                                 FeedbackType="favorite",
-                                                 ItemId=id,
-                                                 UserId=current_user.id,
-                                                 Timestamp=favorite.created_at)])
+                                                 FeedbackType=feedback_out.feedback_type.lower(),
+                                                 ItemId=feedback_out.property_id,
+                                                 UserId=feedback_out.user_id,
+                                                 Timestamp=feedback_out.created_at)])
+
     return favorite
 
 

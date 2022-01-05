@@ -13,4 +13,5 @@ from .gorse_feedback import GorseFeedback
 from .gorse_item import GorseItem
 from .gorse_user import GorseUser
 from .property_filter import PropertyFilter
+from .geometry import Geometry, Coordinates
 

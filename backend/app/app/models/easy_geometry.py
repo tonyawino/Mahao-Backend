@@ -19,7 +19,6 @@ class EasyGeometry(UserDefinedType):
         def process(value):
             if value is None:
                 return None
-            print(f"Value in easy geometry is {value} with type {type(value)}")
             if (isinstance(value, list)):
                 value = tuple(value)
             assert isinstance(value, tuple)
