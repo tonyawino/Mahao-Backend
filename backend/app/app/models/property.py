@@ -40,7 +40,7 @@ class Property(Base):
     # Used for full text search on title, description, and location
     __ts_vector__ = Column(TSVector(), Computed(
         "to_tsvector('english', title || ' ' || description || ' ' || location_name)",
-        persisted=True), default=f"{title} {description} {location_name}")
+        persisted=True))
     __table_args__ = (Index('ix_property___ts_vector__',
                             __ts_vector__, postgresql_using='gin'),)
 
