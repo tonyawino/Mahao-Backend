@@ -29,6 +29,7 @@ firebase = "^3.0.1"
 firebase-admin = "^5.2.0"
 postgis = "^1.0.4"
 GeoAlchemy2 = "^0.10.0"
+Shapely = "^1.8.0"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.770"

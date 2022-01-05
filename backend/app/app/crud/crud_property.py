@@ -2,6 +2,11 @@ from typing import List, Any, Optional
 
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.expression import cast
+from shapely.geometry import Point
+from geoalchemy2 import func, WKTElement, Geography
+from geoalchemy2.shape import from_shape
+from geoalchemy2.types import Geography
 
 from app.crud.base import CRUDBase
 from app.models.property import Property
@@ -23,7 +28,10 @@ class CRUDProperty(CRUDBase[Property, schemas.PropertyCreate, schemas.PropertyUp
     def get_multi(
             self, db: Session, *, skip: int = 0, limit: int = 100, user_id: int,
             options: Optional[List[str]] = None,
-            filters: Optional[schemas.PropertyFilter] = None
+            filters: Optional[schemas.PropertyFilter] = None,
+            sort: Optional[str] = "-time",
+            sort_latitude: Optional[float] = None,
+            sort_longitude: Optional[float] = None
     ) -> List[Property]:
         query = db.query(Property)
         # If a list of IDs is given, filter by them
@@ -61,9 +69,10 @@ class CRUDProperty(CRUDBase[Property, schemas.PropertyCreate, schemas.PropertyUp
             if filters.max_price is not None:
                 query = query.filter(Property.price <= filters.max_price)
 
-            # TODO:Actual filtering by coordinates If filtering by location coordinates
             if filters.location:
-                print(f"Coordinates are {filters.location}")
+                parts = filters.location.split(",")
+                lat, lng, radius = tuple([float(part) for part in parts])
+                query = query.filter(func.ST_DWithin(cast(Property.location, Geography), cast(from_shape(Point(lng, lat)), Geography), radius*1000))
 
             # If filtering by verified status
             if filters.is_verified is not None:
@@ -92,6 +101,22 @@ class CRUDProperty(CRUDBase[Property, schemas.PropertyCreate, schemas.PropertyUp
                     query = query.join(PropertyAmenity, (Property.id == PropertyAmenity.property_id))\
                         .filter(PropertyAmenity.amenity_id.in_(amenities))
 
+        # Sort by appropriate field in ascending or descending order
+        if sort:
+            if sort == "time":
+                query = query.order_by(Property.created_at)
+            elif sort == "-time":
+                query = query.order_by(Property.created_at.desc())
+            elif sort == "price":
+                query = query.order_by(Property.price)
+            elif sort == "-price":
+                query = query.order_by(Property.price.desc())
+            elif sort == "distance" and sort_latitude is not None and sort_longitude is not None:
+                query = query.order_by(func.ST_Distance(cast(Property.location, Geography),
+                                                        cast(from_shape(Point(sort_longitude, sort_latitude)), Geography)))
+            elif sort == "-distance" and sort_latitude is not None and sort_longitude is not None:
+                query = query.order_by(func.ST_Distance(cast(Property.location, Geography),
+                                                        cast(from_shape(Point(sort_longitude, sort_latitude)), Geography)).desc())
         query = query.outerjoin(Favorite, ((Property.id == Favorite.property_id) & (Favorite.user_id == user_id)))
         return query.offset(skip).limit(limit).all()
 
