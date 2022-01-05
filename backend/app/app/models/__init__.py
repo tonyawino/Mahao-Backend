@@ -2,6 +2,7 @@ from .user import User
 from .property_category import PropertyCategory
 from .amenity import Amenity
 from .ts_vector import TSVector
+from .easy_geometry import EasyGeometry
 from .property import Property
 from .property_amenity import PropertyAmenity
 from .favorite import Favorite

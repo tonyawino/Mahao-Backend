@@ -67,9 +67,9 @@ services:
         # to disable www redirection remove the section: ${STACK_NAME?Variable not set}-www-redirect,
         - traefik.http.routers.${STACK_NAME?Variable not set}-proxy-http.middlewares=${STACK_NAME?Variable not set}-www-redirect,${STACK_NAME?Variable not set}-https-redirect
   db:
-    image: postgres:12
-    volumes:
-      - app-db-data:/var/lib/postgresql/data/pgdata
+    image: kartoza/postgis:13.0
+    #volumes:
+    #  - app-db-data:/var/lib/postgresql/data/pgdata
     env_file:
       - .env
     environment:

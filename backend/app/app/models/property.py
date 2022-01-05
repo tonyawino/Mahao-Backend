@@ -3,11 +3,11 @@ from typing import TYPE_CHECKING
 from sqlalchemy import Column, ForeignKey, Integer, String, Float, Boolean, DateTime, func, Computed, Index
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-#from geoalchemy2 import Geometry
 
 from app.db.base_class import Base
 
 from app.models.ts_vector import TSVector
+from app.models.easy_geometry import EasyGeometry
 
 if TYPE_CHECKING:
     from .user import User  # noqa: F401
@@ -23,7 +23,7 @@ class Property(Base):
     num_bath = Column(Integer, nullable=False, default=0, index=True)
     location_name = Column(String, nullable=True, index=True)
     price = Column(Float, nullable=False, default=0, index=True)
-    #location = Column(Geometry('POINT'), nullable=False, index=True)
+    location = Column(EasyGeometry, nullable=False, index=True)
     is_enabled = Column(Boolean, nullable=False, default=True, index=True)
     is_verified = Column(Boolean, nullable=False, default=False, index=True)
     owner_id = Column(Integer, ForeignKey("user.id"))
