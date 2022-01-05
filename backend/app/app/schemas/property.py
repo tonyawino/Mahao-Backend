@@ -16,7 +16,7 @@ class PropertyBase(BaseModel):
     num_bath: int = Field(..., ge=0, title="Number of bathrooms")
     location_name: Optional[str] = None
     price: float = Field(..., ge=100, title="Rent per month")
-    #location: Geometry
+    location: tuple
     is_enabled: Optional[bool] = True
     is_verified: Optional[bool] = False
 

@@ -11,7 +11,7 @@ from app import crud, models, schemas
 from app.api import deps
 
 from app.core.storage import upload_file
-from app.schemas.geometry import Geometry
+from app.schemas.geometry import Geometry, Coordinates
 
 from app.recommend import gorse
 
@@ -177,8 +177,12 @@ def create_property(
     """
     Create new property.
     """
+    coordinates = Geometry(type="Point", coordinates=Coordinates(latitude=latitude, longitude=longitude))
+    coord = (latitude, longitude)
+    print(f"Coordinates type before object is {type(coord)}")
     property_in = schemas.PropertyCreate(title=title, description=description,
                                          num_bed=num_bed, num_bath=num_bath,
+                                         location = coord,
                                          location_name=location_name, price=price,
                                          is_enabled=is_enabled, is_verified=is_verified,
                                          property_category_id=property_category_id)
