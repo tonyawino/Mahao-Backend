@@ -198,12 +198,15 @@ services:
     image: mysql/mysql-server
     restart: unless-stopped
     ports:
-      - 3306:3306
+      - ${MYSQL_PORT?Variable not set}:${MYSQL_TCP_PORT?Variable not set}
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD?Variable not set}
       MYSQL_DATABASE: ${MYSQL_DATABASE?Variable not set}
       MYSQL_USER: ${MYSQL_USER?Variable not set}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD?Variable not set}
+      MYQL_TCP_PORT: ${MYSQL_TCP_PORT?Variable not set}
+    expose:
+      - ${MYSQL_PORT?Variable not set}
     volumes:
       - ./var/lib/mysql:/var/lib/mysql
   worker:

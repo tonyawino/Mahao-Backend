@@ -185,7 +185,7 @@ def create_property(
     property_category = crud.property_category.get(db=db, id=property_in.property_category_id)
     if not property_category:
         raise HTTPException(status_code=404, detail="Property Category not found")
-    property_in.feature_image = upload_file(feature_image, str(uuid.uuid4()), "property")
+    property_in.feature_image = upload_file(feature_image, str(uuid.uuid4()), "property_feature")
     property = crud.property.create_with_owner(db=db, obj_in=property_in, owner_id=current_user.id)
 
     gorse.insert_item(schemas.GorseItem(Categories=crud.property.get_categories(property),
@@ -230,7 +230,7 @@ def update_property(
                                          is_enabled=is_enabled, is_verified=is_verified,
                                          property_category_id=property_category_id)
     if feature_image:
-        url = upload_file(feature_image, id, "property")
+        url = upload_file(feature_image, id, "property_feature")
         property_in.feature_image = url
 
     if not crud.user.is_superuser(current_user):

@@ -47,7 +47,7 @@ def create_amenity(
     if not icon:
         return amenity
 
-    amenity_in.icon = upload_file(icon, amenity.id, "amenity")
+    amenity_in.icon = upload_file(icon, amenity.id, "property_amenity")
     amenity = crud.item.update(db=db, db_obj=amenity, obj_in=amenity_in)
     return amenity
 
@@ -70,7 +70,7 @@ def update_amenity(
         raise HTTPException(status_code=404, detail="Amenity not found")
     amenity_update = schemas.AmenityUpdate(title=title, description=description)
     if icon:
-        url = upload_file(icon, amenity.id, "amenity")
+        url = upload_file(icon, amenity.id, "property_amenity")
         amenity_update.icon = url
     amenity = crud.item.update(db=db, db_obj=amenity, obj_in=amenity_update)
     return amenity

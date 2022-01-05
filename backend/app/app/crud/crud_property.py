@@ -30,66 +30,67 @@ class CRUDProperty(CRUDBase[Property, schemas.PropertyCreate, schemas.PropertyUp
         if options and (len(options) > 0):
             query = query.filter(Property.id.in_(options))
 
-        # TODO: Actual filtering by Query using SQLAlchemy-Searchable If filtering by query, perform full
-        if filters.q:
-            # Remove extra spaces
-            text = filters.q.replace('  ', ' ')
-            search_text = ''
-            for word in text.split(' '):
-                search_text = search_text.join('|').join(word)
-            query = query.filter(Property.__ts_vector__.match(filters.q))
+        if filters:
+            # TODO: Actual filtering by Query using SQLAlchemy-Searchable If filtering by query, perform full
+            if filters.q:
+                # Remove extra spaces
+                text = filters.q.replace('  ', ' ')
+                search_text = ''
+                for word in text.split(' '):
+                    search_text = search_text.join('|').join(word)
+                query = query.filter(Property.__ts_vector__.match(filters.q))
 
-        # If filtering by minimum number of beds
-        if filters.min_bed is not None:
-            query = query.filter(Property.num_bed >= filters.min_bed)
-        # If filtering by maximum number of beds
-        if filters.max_bed is not None:
-            query = query.filter(Property.num_bed <= filters.max_bed)
+            # If filtering by minimum number of beds
+            if filters.min_bed is not None:
+                query = query.filter(Property.num_bed >= filters.min_bed)
+            # If filtering by maximum number of beds
+            if filters.max_bed is not None:
+                query = query.filter(Property.num_bed <= filters.max_bed)
 
-        # If filtering by minimum number of bathrooms
-        if filters.min_bath is not None:
-            query = query.filter(Property.num_bath >= filters.min_bath)
-        # If filtering by maximum number of bathrooms
-        if filters.max_bath is not None:
-            query = query.filter(Property.num_bath <= filters.max_bath)
+            # If filtering by minimum number of bathrooms
+            if filters.min_bath is not None:
+                query = query.filter(Property.num_bath >= filters.min_bath)
+            # If filtering by maximum number of bathrooms
+            if filters.max_bath is not None:
+                query = query.filter(Property.num_bath <= filters.max_bath)
 
-        # If filtering by minimum price
-        if filters.min_price is not None:
-            query = query.filter(Property.price >= filters.min_price)
-        # If filtering by maximum price
-        if filters.max_price is not None:
-            query = query.filter(Property.price <= filters.max_price)
+            # If filtering by minimum price
+            if filters.min_price is not None:
+                query = query.filter(Property.price >= filters.min_price)
+            # If filtering by maximum price
+            if filters.max_price is not None:
+                query = query.filter(Property.price <= filters.max_price)
 
-        # TODO:Actual filtering by coordinates If filtering by location coordinates
-        if filters.location:
-            print(f"Coordinates are {filters.location}")
+            # TODO:Actual filtering by coordinates If filtering by location coordinates
+            if filters.location:
+                print(f"Coordinates are {filters.location}")
 
-        # If filtering by verified status
-        if filters.is_verified is not None:
-            query = query.filter(Property.is_verified == filters.is_verified)
+            # If filtering by verified status
+            if filters.is_verified is not None:
+                query = query.filter(Property.is_verified == filters.is_verified)
 
-        # If filtering by enabled status
-        if filters.is_enabled is not None:
-            query = query.filter(Property.is_enabled == filters.is_enabled)
+            # If filtering by enabled status
+            if filters.is_enabled is not None:
+                query = query.filter(Property.is_enabled == filters.is_enabled)
 
-        # If filtering by categories
-        if filters.categories:
-            if not isinstance(filters.categories, int):
-                categories = [num for num in filters.categories.split(",")]
-            else:
-                categories = [filters.categories]
-            if len(categories) > 0:
-                query = query.filter(Property.property_category_id.in_(categories))
+            # If filtering by categories
+            if filters.categories:
+                if not isinstance(filters.categories, int):
+                    categories = [num for num in filters.categories.split(",")]
+                else:
+                    categories = [filters.categories]
+                if len(categories) > 0:
+                    query = query.filter(Property.property_category_id.in_(categories))
 
-        # If filtering by amenities
-        if filters.amenities:
-            if not isinstance(filters.amenities, int):
-                amenities = [num for num in filters.amenities.split(",")]
-            else:
-                amenities = [filters.amenities]
-            if len(amenities) > 0:
-                query = query.join(PropertyAmenity, (Property.id == PropertyAmenity.property_id))\
-                    .filter(PropertyAmenity.amenity_id.in_(amenities))
+            # If filtering by amenities
+            if filters.amenities:
+                if not isinstance(filters.amenities, int):
+                    amenities = [num for num in filters.amenities.split(",")]
+                else:
+                    amenities = [filters.amenities]
+                if len(amenities) > 0:
+                    query = query.join(PropertyAmenity, (Property.id == PropertyAmenity.property_id))\
+                        .filter(PropertyAmenity.amenity_id.in_(amenities))
 
         query = query.outerjoin(Favorite, ((Property.id == Favorite.property_id) & (Favorite.user_id == user_id)))
         return query.offset(skip).limit(limit).all()
