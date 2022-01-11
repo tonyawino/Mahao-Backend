@@ -151,11 +151,11 @@ class CRUDProperty(CRUDBase[Property, schemas.PropertyCreate, schemas.PropertyUp
                   f"verified:{property.is_verified}"]
 
         for amenity in property.property_amenities:
-            labels.append(f"amenity:{amenity.id}")
+            labels.append(f"amenity:{amenity.amenity_id}")
         return labels
 
     def get_categories(self, property: Property) -> List[str]:
-        return [amenity.id for amenity in property.property_amenities]
+        return [amenity.amenity_id for amenity in property.property_amenities]
 
 
 property = CRUDProperty(Property)
