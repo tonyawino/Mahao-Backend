@@ -1,5 +1,5 @@
 from .msg import Msg
-from .token import Token, TokenPayload
+from .token import Token, TokenPayload, TokenWithUser
 from .user import User, UserCreate, UserInDB, UserUpdate
 from .property_category import PropertyCategory, PropertyCategoryCreate, PropertyCategoryInDB, PropertyCategoryUpdate
 from .amenity import Amenity, AmenityCreate, AmenityInDB, AmenityUpdate

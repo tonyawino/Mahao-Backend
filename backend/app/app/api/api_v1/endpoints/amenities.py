@@ -48,7 +48,7 @@ def create_amenity(
         return amenity
 
     amenity_in.icon = upload_file(icon, amenity.id, "property_amenity")
-    amenity = crud.item.update(db=db, db_obj=amenity, obj_in=amenity_in)
+    amenity = crud.amenity.update(db=db, db_obj=amenity, obj_in=amenity_in)
     return amenity
 
 
@@ -72,7 +72,7 @@ def update_amenity(
     if icon:
         url = upload_file(icon, amenity.id, "property_amenity")
         amenity_update.icon = url
-    amenity = crud.item.update(db=db, db_obj=amenity, obj_in=amenity_update)
+    amenity = crud.amenity.update(db=db, db_obj=amenity, obj_in=amenity_update)
     return amenity
 
 

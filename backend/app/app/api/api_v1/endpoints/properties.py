@@ -99,7 +99,9 @@ def read_latest_properties(
         latest.sort(key=get_score, reverse=True)
         properties = list()
         for neighbor in latest:
-            properties.append(crud.property.get(db=db, id=int(neighbor["Id"]), user_id=current_user.id))
+            property_get = crud.property.get(db=db, id=int(neighbor["Id"]), user_id=current_user.id)
+            if property_get:
+                properties.append(property_get)
     # If no recommendations were generated
     else:
         properties = crud.property.get_multi(db=db,
@@ -127,7 +129,9 @@ def read_popular_properties(
         popular.sort(key=get_score, reverse=True)
         properties = list()
         for neighbor in popular:
-            properties.append(crud.property.get(db=db, id=int(neighbor["Id"]), user_id=current_user.id))
+            property_get = crud.property.get(db=db, id=int(neighbor["Id"]), user_id=current_user.id)
+            if property_get:
+                properties.append(property_get)
     # If no recommendations were generated
     else:
         properties = crud.property.get_multi(db=db,
@@ -162,7 +166,9 @@ def read_recommended_properties(
                 neighbor_id = int(neighbor)
             else:
                 neighbor_id = int(neighbor["Id"])
-            properties.append(crud.property.get(db=db, id=neighbor_id, user_id=current_user.id))
+            property_get = crud.property.get(db=db, id=neighbor_id, user_id=current_user.id)
+            if property_get:
+                properties.append(property_get)
     # If no recommendations were generated
     else:
         properties = crud.property.get_multi(db=db,
@@ -205,6 +211,30 @@ def create_property(
     if not property_category:
         raise HTTPException(status_code=404, detail="Property Category not found")
     property_in.feature_image = upload_file(feature_image, str(uuid.uuid4()), "property_feature")
+    property = crud.property.create_with_owner(db=db, obj_in=property_in, owner_id=current_user.id)
+
+    gorse.insert_item(schemas.GorseItem(Categories=crud.property.get_categories(property),
+                                        IsHidden=(not property.is_enabled),
+                                        Comment=f"Created by {current_user.id}",
+                                        ItemId=property.id,
+                                        Labels=crud.property.get_labels(property),
+                                        Timestamp=property.created_at))
+    return property
+
+
+@router.post("/body/", response_model=schemas.Property)
+def create_property(
+        *,
+        db: Session = Depends(deps.get_db),
+        property_in: schemas.PropertyCreate,
+        current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Create new property.
+    """
+    property_category = crud.property_category.get(db=db, id=property_in.property_category_id)
+    if not property_category:
+        raise HTTPException(status_code=404, detail="Property Category not found")
     property = crud.property.create_with_owner(db=db, obj_in=property_in, owner_id=current_user.id)
 
     gorse.insert_item(schemas.GorseItem(Categories=crud.property.get_categories(property),
@@ -486,7 +516,7 @@ def remove_property_photo(
         current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Add photo to the property
+    Remove photo from the property
     """
     property = crud.property.get(db=db, id=id, user_id=current_user.id)
     if not property:
@@ -523,7 +553,9 @@ def read_similar_properties(
         neighbors.sort(key=get_score, reverse=True)
         properties = list()
         for neighbor in neighbors:
-            properties.append(crud.property.get(db=db, id=int(neighbor["Id"]), user_id=current_user.id))
+            property_get = crud.property.get(db=db, id=int(neighbor["Id"]), user_id=current_user.id)
+            if property_get:
+                properties.append(property_get)
     # If no recommendations were generated
     else:
         properties = crud.property.get_multi(db=db,
