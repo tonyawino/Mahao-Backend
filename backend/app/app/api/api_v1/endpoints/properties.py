@@ -40,9 +40,9 @@ def read_properties(
     if sort:
         if "distance" in sort:
             if sort_latitude is None:
-                raise HTTPException(status_code=400, detail="Query parameter sort_latitude must be specified when sorting by distance")
+                raise HTTPException(status_code=400, detail=["Query parameter sort_latitude must be specified when sorting by distance"])
             if sort_longitude is None:
-                raise HTTPException(status_code=400, detail="Query parameter sort_longitude must be specified when sorting by distance")
+                raise HTTPException(status_code=400, detail=["Query parameter sort_longitude must be specified when sorting by distance"])
 
     properties = crud.property.get_multi(db=db, skip=skip, limit=limit, user_id=current_user.id, filters=filters, sort=sort,
                                          sort_latitude=sort_latitude, sort_longitude=sort_longitude)

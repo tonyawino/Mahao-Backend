@@ -1,6 +1,6 @@
 from typing import Any, List
 
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException, UploadFile, File
 from fastapi.encoders import jsonable_encoder
 from pydantic.networks import EmailStr
 from sqlalchemy.orm import Session
@@ -9,6 +9,7 @@ from app import crud, models, schemas
 from app.api import deps
 from app.core.config import settings
 from app.utils import send_new_account_email
+from app.core.storage import upload_file
 
 from app.recommend import gorse
 
@@ -87,8 +88,8 @@ def update_user_me(
     if last_name is not None:
         user_in.last_name = last_name
     if phone is not None:
-        user = crud.user.get_by_phone(db, phone=user_in.phone)
-        if user:
+        user = crud.user.get_by_phone(db, phone=phone)
+        if user and user.id!=current_user.id:
             raise HTTPException(
                 status_code=400,
                 detail="The user with this phone already exists in the system",
@@ -102,6 +103,23 @@ def update_user_me(
                                                  Comment=f"Updated by {user.id}",
                                                  UserId=user.id,
                                                  Labels=[user.location]))
+    return user
+
+
+@router.post("/me/avatar", response_model=schemas.User)
+def update_profile_picture(
+    *,
+    db: Session = Depends(deps.get_db),
+    profile_picture: UploadFile = File(...),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Update a user's profile picture.
+    """
+    current_user_data = jsonable_encoder(current_user)
+    user_in = schemas.UserUpdate(**current_user_data)
+    user_in.profile_picture = upload_file(profile_picture, current_user.id, "mahao_avatars")
+    user = crud.user.update(db=db, db_obj=current_user, obj_in=user_in)
     return user
 
 
