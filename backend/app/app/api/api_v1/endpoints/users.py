@@ -26,7 +26,7 @@ def read_users(
     """
     Retrieve users.
     """
-    users = crud.user.get_multi(db, skip=skip, limit=limit)
+    users = crud.user.get_multi(db, skip=skip, limit=limit, order=models.User.first_name)
     return users
 
 

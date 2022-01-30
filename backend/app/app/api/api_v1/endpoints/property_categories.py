@@ -20,7 +20,7 @@ def read_property_categories(
     """
     Retrieve property categories.
     """
-    items = crud.property_category.get_multi(db, skip=skip, limit=limit)
+    items = crud.property_category.get_multi(db, skip=skip, limit=limit, order=models.PropertyCategory.title)
     return items
 
 
