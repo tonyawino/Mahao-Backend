@@ -20,7 +20,7 @@ def read_amenities(
     """
     Retrieve amenities.
     """
-    items = crud.amenity.get_multi(db, skip=skip, limit=limit)
+    items = crud.amenity.get_multi(db, skip=skip, limit=limit, order=models.Amenity.title)
     return items
 
 
