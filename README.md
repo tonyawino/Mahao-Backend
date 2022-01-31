@@ -20,16 +20,16 @@ post their houses and prospective tenants to find houses.
 
 The backend is build using Python and FastAPI. The application interfaces 
 with an instance of the Gorse Recommendation engine to generate property 
-reommendations. View the [FastAPI backend documentation](https://github.com/tonyawino/Mahao-Backend/blob/master/backend/README.md)
+reommendations. View the [FastAPI backend documentation](./backend/README.md)
 and the [Gorse backend documentation](https://github.com/zhenghaoz/gorse/blob/master/README.md).
 ## Environment Variables
 
-To run this project, you will need to add the following [environment variables](https://github.com/tonyawino/Mahao-Backend/blob/master/.env.example) 
+To run this project, you will need to add the following [environment variables](./.env.example) 
 to your .env file
 
 ## Demo
 
-![](https://github.com/tonyawino/Mahao-Backend/tree/master/screenshots/mahao_backend.gif)
+![](./screenshots/mahao_backend.gif)
 
 ## Deployment
 
