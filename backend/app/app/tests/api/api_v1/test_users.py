@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app import crud
 from app.core.config import settings
 from app.schemas.user import UserCreate
-from app.tests.utils.utils import random_email, random_lower_string
+from app.tests.utils.utils import random_email, random_lower_string, random_phone
 
 
 def test_get_users_superuser_me(
@@ -36,10 +36,14 @@ def test_create_user_new_email(
 ) -> None:
     username = random_email()
     password = random_lower_string()
-    data = {"email": username, "password": password}
+    first_name = random_lower_string()
+    last_name = random_lower_string()
+    phone = random_phone()
+    data = {"email": username, "password": password, "first_name":first_name, "last_name":last_name, "phone":phone}
     r = client.post(
         f"{settings.API_V1_STR}/users/", headers=superuser_token_headers, json=data,
     )
+    print(f"Create user response {r.json()}")
     assert 200 <= r.status_code < 300
     created_user = r.json()
     user = crud.user.get_by_email(db, email=username)
@@ -52,7 +56,10 @@ def test_get_existing_user(
 ) -> None:
     username = random_email()
     password = random_lower_string()
-    user_in = UserCreate(email=username, password=password)
+    first_name = random_lower_string()
+    last_name = random_lower_string()
+    phone = random_phone()
+    user_in = UserCreate(first_name=first_name, last_name=last_name, phone=phone, username=username, email=username, password=password)
     user = crud.user.create(db, obj_in=user_in)
     user_id = user.id
     r = client.get(
@@ -71,9 +78,12 @@ def test_create_user_existing_username(
     username = random_email()
     # username = email
     password = random_lower_string()
-    user_in = UserCreate(email=username, password=password)
+    first_name = random_lower_string()
+    last_name = random_lower_string()
+    phone = random_phone()
+    user_in = UserCreate(first_name=first_name, last_name=last_name, phone=phone, username=username, email=username, password=password)
     crud.user.create(db, obj_in=user_in)
-    data = {"email": username, "password": password}
+    data = {"email": username, "password": password, "first_name":first_name, "last_name":last_name, "phone":phone}
     r = client.post(
         f"{settings.API_V1_STR}/users/", headers=superuser_token_headers, json=data,
     )
@@ -87,7 +97,10 @@ def test_create_user_by_normal_user(
 ) -> None:
     username = random_email()
     password = random_lower_string()
-    data = {"email": username, "password": password}
+    first_name = random_lower_string()
+    last_name = random_lower_string()
+    phone = random_phone()
+    data = {"email": username, "password": password, "first_name":first_name, "last_name":last_name, "phone":phone}
     r = client.post(
         f"{settings.API_V1_STR}/users/", headers=normal_user_token_headers, json=data,
     )
@@ -99,12 +112,18 @@ def test_retrieve_users(
 ) -> None:
     username = random_email()
     password = random_lower_string()
-    user_in = UserCreate(email=username, password=password)
+    first_name = random_lower_string()
+    last_name = random_lower_string()
+    phone = random_phone()
+    user_in = UserCreate(first_name=first_name, last_name=last_name, phone=phone, username=username, email=username, password=password)
     crud.user.create(db, obj_in=user_in)
 
     username2 = random_email()
     password2 = random_lower_string()
-    user_in2 = UserCreate(email=username2, password=password2)
+    first_name2 = random_lower_string()
+    last_name2 = random_lower_string()
+    phone2 = random_phone()
+    user_in2 = UserCreate(first_name=first_name2, last_name=last_name2, phone=phone2, username=username2, email=username2, password=password2)
     crud.user.create(db, obj_in=user_in2)
 
     r = client.get(f"{settings.API_V1_STR}/users/", headers=superuser_token_headers)

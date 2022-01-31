@@ -8,7 +8,7 @@ class GorseUser(BaseModel):
     Subscribe: List[str]
     Comment: str
     UserId: str
-    Labels: List[str]
+    Labels: List[Optional[str]]
 
 
 
